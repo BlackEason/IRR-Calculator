@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRR计算器 - 最终版</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            gap: 20px;
+        }
+        
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+        
+        .progress-step.active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .progress-step.completed {
+            background: rgba(76, 175, 80, 0.3);
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .step {
+            display: none;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            background: #fafafa;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f9f9f9;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #4facfe;
+            background: #e3f2fd;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .data-preview {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .data-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result-card h4 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-value {
+            font-weight: 600;
+            color: #4facfe;
+        }
+        
+        .success-message, .error-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .negative-irr-info {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #ffeaa7;
+        }
+        
+        @media (max-width: 768px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 IRR计算器</h1>
+            <p>专业保险方案内部收益率计算工具</p>
+            
+            <div class="progress-bar">
+                <div class="progress-step active" id="step1-indicator">
+                    <span>📊</span>
+                    <span>设置参数</span>
+                </div>
+                <div class="progress-step" id="step2-indicator">
+                    <span>📁</span>
+                    <span>上传数据</span>
+                </div>
+                <div class="progress-step" id="step3-indicator">
+                    <span>📈</span>
+                    <span>查看结果</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- 步骤1: 参数设置 -->
+            <div class="step active" id="step1">
+                <div class="section">
+                    <h3>💰 保费参数设置</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="payYears">缴费年限</label>
+                            <input type="number" id="payYears" value="5" min="1" max="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="annualPremium">年缴金额（元）</label>
+                            <input type="number" id="annualPremium" value="7000" min="0" step="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstYearDiscount">首年保费优惠（元）</label>
+                            <input type="number" id="firstYearDiscount" value="980" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="regulatoryFee">监管局征费（元）</label>
+                            <input type="number" id="regulatoryFee" value="7" min="0" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>📋 保费现金流预览</h3>
+                    <p><strong>现金流序列：</strong><span id="cashFlowDisplay"></span></p>
+                    <p><strong>总保费投入：</strong><span id="totalPremiumDisplay"></span></p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn btn-primary btn-large" onclick="goToStep(2)">
+                        下一步：上传数据 →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 步骤2: 数据上传 -->
+            <div class="step" id="step2">
+                <div class="section">
+                    <h3>📁 上传数据底稿</h3>
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                        <div class="upload-icon">📊</div>
+                        <h4>点击或拖拽上传Excel文件</h4>
+                        <p>支持 .xlsx 和 .xls 格式</p>
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                    </div>
+                    <div id="uploadStatus" class="hidden"></div>
+                </div>
+                
+                <div class="section" id="dataPreviewSection" style="display: none;">
+                    <h3>👀 数据预览</h3>
+                    <div class="data-preview" id="dataPreview"></div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">
+                        ← 返回参数设置
+                    </button>
+                    <button class="btn btn-primary btn-large" id="calculateBtn" onclick="calculateIRRResults()" disabled>
+                        🧮 开始计算IRR
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 步骤3: 结果展示 -->
+            <div class="step" id="step3">
+                <div class="result-grid">
+                    <div>
+                        <div class="result-card">
+                            <h4>📊 IRR趋势图</h4>
+                            <div class="chart-container">
+                                <canvas id="irrChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <h4>📋 关键年份IRR</h4>
+                            <div id="keyResults"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h4>📄 详细计算结果（所有数据行）</h4>
+                        <div class="negative-irr-info">
+                            <strong>说明：</strong>显示所有数据行，IRR为负数时显示为空。
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="data-table" id="resultsTable">
+                                <thead>
+                                    <tr>
+                                                                <th>年份</th>
+                        <th>提取金额（元）</th>
+                        <th>已提取金额累计（元）</th>
+                        <th>提取后总价值（元）</th>
+                        <th>现金流期数</th>
+                        <th>IRR (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="hiddenResultsInfo" class="negative-irr-info" style="display: none;">
+                            负数IRR显示为空: <span id="hiddenCount">0</span> 个结果
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">
+                        ← 重新上传数据
+                    </button>
+                    <button class="btn btn-success btn-large" onclick="downloadExcel()">
+                        📥 下载Excel报告
+                    </button>
+                    <button class="btn btn-primary" onclick="goToStep(1)">
+                        🔄 重新计算
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let uploadedData = null;
+        let calculationResults = null;
+        let premiumCashFlow = [];
+        let hiddenNegativeCount = 0;
+        
+        // IRR计算函数
+        function calculateIRR(cashFlows) {
+            function npv(rate) {
+                return cashFlows.reduce((sum, cf, i) => sum + cf / Math.pow(1 + rate, i), 0);
+            }
+            
+            let low = -0.99, high = 5.0;
+            for (let i = 0; i < 1000; i++) {
+                let mid = (low + high) / 2;
+                if (Math.abs(npv(mid)) < 0.0001) return mid;
+                npv(mid) > 0 ? low = mid : high = mid;
+            }
+            return mid;
+        }
+        
+        // 步骤切换
+        function goToStep(stepNumber) {
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.progress-step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            document.getElementById(`step${stepNumber}-indicator`).classList.add('active');
+            
+            for (let i = 1; i < stepNumber; i++) {
+                document.getElementById(`step${i}-indicator`).classList.add('completed');
+            }
+        }
+        
+        // 更新保费现金流显示
+        function updatePremiumDisplay() {
+            const payYears = parseInt(document.getElementById('payYears').value);
+            const annualPremium = parseFloat(document.getElementById('annualPremium').value);
+            const discount = parseFloat(document.getElementById('firstYearDiscount').value);
+            const fee = parseFloat(document.getElementById('regulatoryFee').value);
+            
+            const firstYearPremium = annualPremium - discount + fee;
+            premiumCashFlow = [-firstYearPremium];
+            
+            for (let i = 1; i < payYears; i++) {
+                premiumCashFlow.push(-annualPremium);
+            }
+            
+            const total = premiumCashFlow.reduce((sum, cf) => sum + Math.abs(cf), 0);
+            
+            document.getElementById('cashFlowDisplay').textContent = 
+                '[' + premiumCashFlow.map(cf => cf.toLocaleString()).join(', ') + ']';
+            document.getElementById('totalPremiumDisplay').textContent = 
+                total.toLocaleString() + '元';
+        }
+        
+        // 文件上传处理
+        function setupFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+        }
+        
+        // 处理上传的文件
+        function handleFile(file) {
+            if (!file.name.match(/\.(xlsx|xls)$/)) {
+                showMessage('请上传Excel文件！', 'error');
+                return;
+            }
+            
+            showMessage('正在读取文件...', 'info');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                    
+                    parseExcelData(jsonData);
+                    showMessage('文件上传成功！', 'success');
+                    
+                } catch (error) {
+                    showMessage('文件读取失败，请检查文件格式！', 'error');
+                    console.error('File reading error:', error);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 解析Excel数据
+        function parseExcelData(jsonData) {
+            if (jsonData.length < 2) {
+                showMessage('文件数据不足！', 'error');
+                return;
+            }
+            
+            // 查找数据开始行
+            let dataStartRow = -1;
+            for (let i = 0; i < jsonData.length; i++) {
+                const firstCell = jsonData[i][0];
+                if (firstCell && !isNaN(firstCell) && parseInt(firstCell) >= 1) {
+                    dataStartRow = i;
+                    break;
+                }
+            }
+            
+            if (dataStartRow === -1) {
+                showMessage('未找到有效的数据行！', 'error');
+                return;
+            }
+            
+            // 处理数据
+            uploadedData = [];
+            for (let i = dataStartRow; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                if (row && row.length >= 6) {
+                    const year = parseInt(row[0]);
+                    const extractAmount = parseFloat(row[1]) || 0;
+                    const finalValue = parseFloat(row[5]) || 0;
+                    
+                    if (year && finalValue > 0) {
+                        uploadedData.push({
+                            year: year,
+                            extractAmount: extractAmount,
+                            finalValue: finalValue
+                        });
+                    }
+                }
+            }
+            
+            if (uploadedData.length === 0) {
+                showMessage('未找到有效的数据！', 'error');
+                return;
+            }
+            
+            // 显示数据预览
+            displayDataPreview();
+            document.getElementById('calculateBtn').disabled = false;
+        }
+        
+        // 显示数据预览
+        function displayDataPreview() {
+            const previewDiv = document.getElementById('dataPreview');
+            const section = document.getElementById('dataPreviewSection');
+            
+            let html = '<table class="data-table"><thead><tr>';
+            html += '<th>年份</th><th>提取金额</th><th>提取后总价值</th>';
+            html += '</tr></thead><tbody>';
+            
+            uploadedData.slice(0, 10).forEach(row => {
+                html += `<tr>
+                    <td>第${row.year}年</td>
+                    <td>${row.extractAmount.toLocaleString()}</td>
+                    <td>${row.finalValue.toLocaleString()}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            
+            if (uploadedData.length > 10) {
+                html += `<p style="text-align: center; margin-top: 10px;">
+                    显示前10行，共${uploadedData.length}行数据
+                </p>`;
+            }
+            
+            previewDiv.innerHTML = html;
+            section.style.display = 'block';
+        }
+        
+        // 计算IRR结果
+        function calculateIRRResults() {
+            if (!uploadedData || uploadedData.length === 0) {
+                showMessage('请先上传数据！', 'error');
+                return;
+            }
+            
+            showMessage('正在计算IRR...', 'info');
+            calculationResults = [];
+            hiddenNegativeCount = 0;
+            
+            // 获取提取数据
+            const extractData = {};
+            uploadedData.forEach(row => {
+                if (row.extractAmount > 0) {
+                    extractData[row.year] = row.extractAmount;
+                }
+            });
+            
+            // 计算每个年份的IRR
+            uploadedData.forEach(row => {
+                const year = row.year;
+                const finalValue = row.finalValue;
+                
+                if (finalValue > 0) {
+                    // 构建现金流
+                    const cashFlows = [...premiumCashFlow];
+                    
+                    // 获取该年份的提取金额
+                    const currentExtract = extractData[year] || 0;
+                    
+                    // 计算累计提取金额
+                    let cumulativeExtract = 0;
+                    for (let y = 1; y <= year; y++) {
+                        cumulativeExtract += extractData[y] || 0;
+                    }
+                    
+                    // 第6年到第year年期间的现金流
+                    for (let y = premiumCashFlow.length + 1; y <= year; y++) {
+                        if (extractData[y]) {
+                            cashFlows.push(extractData[y]);
+                        } else {
+                            cashFlows.push(0);
+                        }
+                    }
+                    
+                    // 最后一期：提取后总价值
+                    cashFlows.push(finalValue);
+                    
+                    // 计算IRR
+                    let irr = null;
+                    let irrDisplay = '';
+                    try {
+                        const irrValue = calculateIRR(cashFlows);
+                        const irrPct = irrValue * 100;
+                        
+                        // 显示所有行，负数IRR显示为空
+                        if (irrPct > 0) {
+                            irr = irrPct;
+                            irrDisplay = irrPct.toFixed(2) + '%';
+                        } else {
+                            irr = null;
+                            irrDisplay = '';
+                            hiddenNegativeCount++;
+                        }
+                    } catch (error) {
+                        irr = null;
+                        irrDisplay = '';
+                        hiddenNegativeCount++;
+                    }
+                    
+                    // 保存所有结果，包括负数IRR
+                    calculationResults.push({
+                        year: year,
+                        extractAmount: currentExtract,
+                        cumulativeExtract: cumulativeExtract,
+                        finalValue: finalValue,
+                        periods: cashFlows.length,
+                        irr: irr,
+                        irrDisplay: irrDisplay,
+                        cashFlows: cashFlows
+                    });
+                }
+            });
+            
+            displayResults();
+            goToStep(3);
+            
+            showMessage(`成功处理${calculationResults.length}行数据！`, 'success');
+        }
+        
+        // 显示结果 - 修改版本，显示所有行，负数IRR为空，增加累计提取金额列
+        function displayResults() {
+            // 显示详细结果表格
+            const tableBody = document.getElementById('resultsTableBody');
+            tableBody.innerHTML = '';
+            
+            calculationResults.forEach(result => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>第${result.year}年</td>
+                    <td>${result.extractAmount.toLocaleString()}</td>
+                    <td>${result.cumulativeExtract.toLocaleString()}</td>
+                    <td>${result.finalValue.toLocaleString()}</td>
+                    <td>${result.periods}</td>
+                    <td class="result-value">${result.irrDisplay}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            // 显示负数IRR统计
+            if (hiddenNegativeCount > 0) {
+                document.getElementById('hiddenCount').textContent = hiddenNegativeCount;
+                document.getElementById('hiddenResultsInfo').style.display = 'block';
+            }
+            
+            // 显示关键年份（只显示有效IRR）
+            const keyResults = document.getElementById('keyResults');
+            keyResults.innerHTML = '';
+            
+            const keyYears = [5, 10, 15, 20, 25, 30, 35];
+            keyYears.forEach(year => {
+                const result = calculationResults.find(r => r.year === year && r.irr !== null);
+                if (result) {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    const extractInfo = result.extractAmount > 0 ? ` (提取: ${result.extractAmount.toLocaleString()}元)` : '';
+                    div.innerHTML = `
+                        <span>第${year}年:</span>
+                        <span class="result-value">${result.irr.toFixed(2)}%${extractInfo}</span>
+                    `;
+                    keyResults.appendChild(div);
+                }
+            });
+            
+            // 绘制图表
+            drawChart();
+        }
+        
+        // 绘制IRR趋势图
+        function drawChart() {
+            const ctx = document.getElementById('irrChart').getContext('2d');
+            
+            if (window.irrChartInstance) {
+                window.irrChartInstance.destroy();
+            }
+            
+            // 只显示有效IRR的数据点
+            const validResults = calculationResults.filter(r => r.irr !== null);
+            const years = validResults.map(r => `第${r.year}年`);
+            const irrs = validResults.map(r => r.irr);
+            
+            window.irrChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'IRR (%)',
+                        data: irrs,
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#4facfe',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'IRR趋势分析（仅正数结果）',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'IRR (%)'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '年份'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+        
+        // 下载Excel报告
+        function downloadExcel() {
+            if (!calculationResults || calculationResults.length === 0) {
+                showMessage('没有计算结果可以下载！', 'error');
+                return;
+            }
+            
+            // 准备数据
+            const wsData = [
+                ['IRR计算报告（所有数据行）'],
+                [''],
+                ['保费信息'],
+                ['保费现金流', premiumCashFlow.join(', ')],
+                ['总保费投入', premiumCashFlow.reduce((sum, cf) => sum + Math.abs(cf), 0).toLocaleString() + '元'],
+                [''],
+                ['计算结果说明'],
+                ['显示所有数据行，IRR为负数时显示为空'],
+                [`负数IRR结果: ${hiddenNegativeCount}个`],
+                [''],
+                ['详细计算结果'],
+                ['年份', '提取金额(元)', '已提取金额累计(元)', '提取后总价值(元)', '现金流期数', 'IRR(%)']
+            ];
+            
+            calculationResults.forEach(result => {
+                wsData.push([
+                    `第${result.year}年`,
+                    result.extractAmount,
+                    result.cumulativeExtract,
+                    result.finalValue,
+                    result.periods,
+                    result.irrDisplay
+                ]);
+            });
+            
+            // 创建工作簿
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // 设置列宽
+            ws['!cols'] = [
+                {wch: 15}, {wch: 15}, {wch: 18}, {wch: 12}, {wch: 12}
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'IRR计算结果');
+            
+            // 下载文件
+            const fileName = `IRR计算报告_完整结果_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            showMessage('Excel报告下载成功！', 'success');
+        }
+        
+        // 显示消息
+        function showMessage(message, type) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.className = type === 'error' ? 'error-message' : 
+                                 type === 'success' ? 'success-message' : 
+                                 'success-message';
+            statusDiv.textContent = message;
+            statusDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusDiv.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置事件监听器
+            ['payYears', 'annualPremium', 'firstYearDiscount', 'regulatoryFee'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updatePremiumDisplay);
+            });
+            
+            // 初始化显示
+            updatePremiumDisplay();
+            
+            // 设置文件上传
+            setupFileUpload();
+        });
+    </script>
+</body>
+</html> 
