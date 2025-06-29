@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRR计算器 - 项目首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+        
+        .features {
+            margin: 30px 0;
+            text-align: left;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+            color: white;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 10px 25px rgba(108, 117, 125, 0.3);
+        }
+        
+        .github-link {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .github-link a {
+            color: #24292e;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .github-link a:hover {
+            color: #0366d6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 IRR计算器</h1>
+        <p class="subtitle">内部收益率计算工具 - 支持Python和Web版本</p>
+        
+        <div class="features">
+            <div class="feature-item">
+                <div class="feature-icon">🌐</div>
+                <div>
+                    <strong>Web版本</strong> - 在浏览器中直接使用，支持文件拖拽上传
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🐍</div>
+                <div>
+                    <strong>Python版本</strong> - 命令行工具，支持批量计算和Excel导出
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <div>
+                    <strong>精确计算</strong> - 基于二分法算法，IRR精确到2位小数
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📈</div>
+                <div>
+                    <strong>可视化图表</strong> - 提供IRR趋势图和现金流分析
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <a href="irr_calculator_final.html" class="btn">🚀 启动Web版计算器</a>
+            <a href="https://github.com/BlackEason/IRR-Calculator" class="btn btn-secondary">📂 查看源代码</a>
+        </div>
+        
+        <div class="github-link">
+            <p>
+                <strong>GitHub仓库:</strong> 
+                <a href="https://github.com/BlackEason/IRR-Calculator" target="_blank">
+                    BlackEason/IRR-Calculator
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html> 
